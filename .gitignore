@@ -1,0 +1,46 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.DotSettings.user
+
+## Node / Vue
+node_modules/
+dist/
+*.local
+.npm
+.eslintcache
+
+## IDE
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## WorldForge runtime
+*.worldforge.db
+*.worldforge.db-shm
+*.worldforge.db-wal
+
+## Env
+.env
+.env.*
+!.env.example
+
+## Playwright
+test-results/
+playwright-report/
+playwright/.cache/

@@ -1,0 +1,362 @@
+:root {
+  --font-size-base: 16px;
+  --color-primary: #6366f1;
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-border: #2a2f3d;
+  --color-text: #e8eaed;
+  --color-muted: #9aa0a6;
+  --border-radius: 4px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.workspace {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.hero h1 {
+  margin: 0 0 0.25rem;
+  font-size: 2rem;
+}
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.create-form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.project-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.project-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.meta,
+.muted {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.error {
+  color: #f87171;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  min-height: 60vh;
+}
+
+.workspace-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.workspace-header h1 {
+  margin: 0;
+  flex: 1;
+}
+
+.auto-detect-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.placeholder {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.contradiction-list {
+  margin-top: 1rem;
+  padding-left: 1.25rem;
+}
+
+.message {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 900px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.panel-head h2 {
+  margin: 0;
+}
+
+.manuscript-tree {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+
+.manuscript-tree li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.manuscript-tree li.dragging {
+  opacity: 0.5;
+}
+
+.manuscript-tree li.drop-before {
+  box-shadow: inset 0 2px 0 var(--color-primary);
+}
+
+.manuscript-tree li.drop-after {
+  box-shadow: inset 0 -2px 0 var(--color-primary);
+}
+
+.manuscript-tree li.drop-inside {
+  outline: 1px dashed var(--color-primary);
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--color-muted);
+  padding: 0 0.25rem;
+  user-select: none;
+  font-size: 0.75rem;
+}
+
+.manuscript-tree li.active .tree-select {
+  background: var(--color-border);
+}
+
+.tree-select {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.tree-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-meta {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.tree-action {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  background: var(--color-border);
+}
+
+.tree-action.danger {
+  background: #4a2020;
+}
+
+.tiptap-shell {
+  margin-top: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  min-height: 320px;
+}
+
+.tiptap-toolbar {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tiptap-toolbar button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  background: var(--color-border);
+}
+
+.tiptap-editor :deep(.ProseMirror) {
+  padding: 1rem;
+  min-height: 280px;
+  outline: none;
+}
+
+.tiptap-editor :deep(.ProseMirror p) {
+  margin: 0 0 0.75rem;
+}
+
+.entity-mention {
+  color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 3px;
+  padding: 0 0.2rem;
+}
+
+.entity-suggestion-popup {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 160px;
+}
+
+.entity-suggestion-popup button {
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+}
+
+.entity-suggestion-popup button:hover {
+  background: var(--color-border);
+}
+
+.toolbar-hint {
+  margin-left: auto;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.entity-panel {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.entity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.entity-list li {
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+}
+
+.offline-banner {
+  background: #422006;
+  color: #fcd34d;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  background: var(--color-border);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.file-label input {
+  display: none;
+}
+
+select {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.filter-select {
+  width: 100%;
+  margin-top: 0.75rem;
+}

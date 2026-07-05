@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WorldForge.AI/WorldForge.AI.csproj" />
+    <Project Path="src/WorldForge.Core/WorldForge.Core.csproj" />
+    <Project Path="src/WorldForge.Infrastructure/WorldForge.Infrastructure.csproj" />
+    <Project Path="src/WorldForge.Server/WorldForge.Server.csproj" />
+    <Project Path="src/WorldForge.Shared/WorldForge.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WorldForge.AI.Tests/WorldForge.AI.Tests.csproj" />
+    <Project Path="tests/WorldForge.Core.Tests/WorldForge.Core.Tests.csproj" />
+  </Folder>
+</Solution>

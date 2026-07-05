@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore WorldForge.slnx
+
+      - name: Build
+        run: dotnet build WorldForge.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test WorldForge.slnx -c Release --no-build --verbosity normal
+
+      - name: Install EF tools
+        run: dotnet tool install dotnet-ef --global --version 10.0.9
+
+      - name: EF migration smoke
+        run: |
+          mkdir -p src/WorldForge.Server/Data
+          dotnet ef database update \
+            --project src/WorldForge.Infrastructure \
+            --startup-project src/WorldForge.Server
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/WorldForge.Server/ClientApp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: src/WorldForge.Server/ClientApp/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+  e2e:
+    needs: [dotnet, frontend]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/WorldForge.Server/ClientApp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: src/WorldForge.Server/ClientApp/package-lock.json
+
+      - name: Build server (Release)
+        run: dotnet build ../WorldForge.Server.csproj -c Release
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          CI: true
