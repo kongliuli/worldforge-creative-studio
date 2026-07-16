@@ -14,7 +14,9 @@
 
 ```csharp
 builder.Services.AddWorldForgeCore();
-builder.Services.AddWorldForgeInfrastructure($"Data Source={dbPath}");
+builder.Services.AddWorldForgeInfrastructure(
+    $"Data Source={registryPath}",   // Data/_registry.worldforge.db
+    projectsRoot);                   // Data/Projects/
 builder.Services.AddWorldForgeAi();
 
 // Development CORS → http://localhost:5173
@@ -24,6 +26,8 @@ app.MapHealthEndpoints();
 app.MapTenantEndpoints();
 app.MapProjectEndpoints();
 app.MapManuscriptEndpoints();
+app.MapEntityEndpoints();
+app.MapImportEndpoints();
 app.MapContradictionEndpoints();
 app.MapLicenseEndpoints();
 ```
@@ -46,8 +50,18 @@ app.MapLicenseEndpoints();
 | PUT | `/api/projects/{projectId}/manuscripts/{id}` | 更新（含全量替换 links） |
 | DELETE | `/api/projects/{projectId}/manuscripts/{id}` | 删除（含子树） |
 | PATCH | `/api/projects/{projectId}/manuscripts/reorder` | 拖拽排序 |
+| GET | `/api/projects/{id}/settings` | 项目设置 |
+| PATCH | `/api/projects/{id}/settings` | AutoDetectOnSave / PreferredOllamaModel |
+| GET | `/api/projects/{projectId}/entities` | 实体列表（`type` / `prefix` 过滤） |
+| POST | `/api/projects/{projectId}/entities` | 创建实体（租户门控 discriminator） |
+| GET | `/api/projects/{projectId}/entities/{id}` | 单实体 |
+| PUT | `/api/projects/{projectId}/entities/{id}` | 更新实体 |
+| DELETE | `/api/projects/{projectId}/entities/{id}` | 删除实体 |
+| GET | `/api/projects/{projectId}/contradictions` | 矛盾列表（`status` / `severity` 过滤） |
 | POST | `/api/projects/{projectId}/contradictions/detect` | 运行矛盾检测 |
-| POST | `/api/license/verify` | `{ licenseKey }` 简易校验 |
+| PATCH | `/api/projects/{projectId}/contradictions/{id}` | 更新矛盾状态 |
+| POST | `/api/projects/{projectId}/import/zip` | 导入 Markdown / Scrivener ZIP |
+| POST | `/api/license/verify` | `{ licenseKey }` 简易校验（占位） |
 
 实现文件：`Server/Endpoints/ApiEndpoints.cs`（按静态类分组）。
 
@@ -96,9 +110,9 @@ MVP 可完全离线售卖：reference/07 §2.1 本地 RSA license 校验 — **�
 
 ---
 
-## 七、Notes / 手稿 API 规格（待实现）
+## 七、Notes / 手稿 API 规格（✅ 已实现 v1/v2）
 
-以下端点供 08 §九–§十二 前端实现，**设计已定、代码未写**。
+以下端点已全部落地（实现见 `Server/Endpoints/ApiEndpoints.cs`，DTO 见 `Shared/Dtos/ApiDtos.cs`），本节保留作为规格说明。
 
 ### 7.1 手稿树
 
@@ -136,7 +150,7 @@ MVP 可完全离线售卖：reference/07 §2.1 本地 RSA license 校验 — **�
 | GET | `/api/projects/{projectId}/contradictions` | Query: `status`, `severity` |
 | PATCH | `/api/projects/{projectId}/contradictions/{id}` | `{ status: Acknowledged \| Resolved \| FalsePositive }` |
 
-### 7.4 新增 DTO（Shared 规划）
+### 7.4 DTO（Shared · 已实现，以 `ApiDtos.cs` 为准）
 
 ```csharp
 public record ManuscriptNodeDto(Guid Id, string Title, Guid? ParentId, int SortOrder, int WordCount, string Status);
@@ -148,7 +162,7 @@ public record UpsertEntityRequest(string Discriminator, string Title, string? Co
 
 ### 7.5 服务层
 
-新增 `INoteService` / `IManuscriptService` / `IEntityService` 于 Core 接口，Infrastructure 实现 — 避免 Endpoint 直接操作 DbContext。
+`IManuscriptService` / `IEntityService` / `IContradictionQueryService` 已落地于 Core 接口 + Infrastructure 实现，Endpoint 不直接操作 DbContext（见 [02 §四](./02-引擎内核.md)）。
 
 ---
 

@@ -12,12 +12,15 @@
 | 构建 | Vite |
 | 状态 | Pinia |
 | 路由 | Vue Router |
+| 编辑器 | TipTap 3（StarterKit + Suggestion，`@` 实体引用） |
+| PWA | vite-plugin-pwa + Workbox（PWA-1） |
+| E2E | Playwright（`e2e/smoke.spec.ts`） |
 | 端口 | 5173 |
 | API | `fetch` → `/api` 代理到 5280 |
 
 路径：`src/WorldForge.Server/ClientApp/`
 
-**未安装**：TipTap、vite-plugin-pwa、@tanstack/vue-virtual。
+**未安装**：@tanstack/vue-virtual（虚拟滚动，>500 节点再引入）。
 
 ---
 
@@ -25,15 +28,22 @@
 
 ```
 ClientApp/src/
-├── main.ts              Pinia + Router
+├── main.ts              Pinia + Router + SW 注册
 ├── App.vue              RouterView 壳
-├── api/client.ts        REST 封装
-├── stores/projectStore.ts
+├── api/                 client.ts + projects/manuscripts/entities/contradictions/tenants/import
+├── stores/              projectStore、manuscriptStore
+├── composables/         useTenantTheme 等
+├── components/
+│   ├── editor/          TipTapEditor.vue、EntityMention.ts
+│   ├── manuscript/      ManuscriptTree.vue（拖拽排序）
+│   ├── entity/          EntityPanel.vue（角色）
+│   └── contradiction/   ContradictionPanel.vue
+├── themes/              trust-neutral.css、clinical-light.css
 ├── router/index.ts
 ├── views/
-│   ├── HomeView.vue     项目列表 + 创建
-│   └── WorkspaceView.vue 三栏占位 + 检测按钮
-└── style.css            Creative 深色 CSS 变量
+│   ├── HomeView.vue     项目列表 + 创建 + ZIP 导入
+│   └── WorkspaceView.vue 三栏工作区（树 / 编辑器 / 面板）
+└── style.css            Creative 深色 CSS 变量（immersive-dark 默认）
 ```
 
 ---
@@ -42,18 +52,20 @@ ClientApp/src/
 
 | 路径 | 组件 | 功能 |
 |------|------|------|
-| `/` | HomeView | 列项目、创建、health 版本 |
-| `/workspace/:projectId` | WorkspaceView | 手稿树/编辑器/矛盾面板占位 |
+| `/` | HomeView | 列项目、创建、ZIP 导入、离线缓存回退 |
+| `/workspace/:projectId` | WorkspaceView | 手稿树 + TipTap 编辑器 + 实体/矛盾面板 |
 
 ---
 
 ## 四、API 客户端
 
-`api/client.ts`：
+`api/` 按资源拆分模块（`client.ts` 为底层封装）：
 
-- `health()`  
-- `listProjects()` / `createProject(name)`  
-- `detectContradictions(projectId)`  
+- `projects.ts` — 列表/创建/详情/settings  
+- `manuscripts.ts` — 树/CRUD/reorder  
+- `entities.ts` — 实体 CRUD + 前缀搜索  
+- `contradictions.ts` — 列表/detect/状态更新  
+- `tenants.ts` / `import.ts`  
 
 代理配置（`vite.config.ts`）：
 
@@ -63,16 +75,17 @@ proxy: { '/api': { target: 'http://localhost:5280', changeOrigin: true } }
 
 ---
 
-## 五、WorkspaceView 布局（占位）
+## 五、WorkspaceView 布局（✅ 已实现）
 
 ```
-┌──────────┬─────────────────┬──────────┐
-│ 手稿树    │ TipTap 编辑器    │ 矛盾检测  │
-│ 待实现    │ 待实现           │ 按钮可用  │
-└──────────┴─────────────────┴──────────┘
+┌──────────────┬─────────────────┬──────────────┐
+│ ManuscriptTree│ TipTapEditor    │ EntityPanel  │
+│ 拖拽/新建/删除 │ @Entity mention │ Contradiction│
+│              │ 自动保存         │ Panel        │
+└──────────────┴─────────────────┴──────────────┘
 ```
 
-「运行检测」已调用 `POST .../contradictions/detect` 并展示结果列表。
+检测结果经 `ContradictionPanel` 展示，支持过滤与状态更新；保存后自动刷新（AutoDetectOnSave）。
 
 ---
 
@@ -86,10 +99,7 @@ proxy: { '/api': { target: 'http://localhost:5280', changeOrigin: true } }
 /* ... */
 ```
 
-**待做**（03 §API + 立项 06）：
-
-1. 启动时 `GET /api/tenants/creative`  
-2. 按 `skinId` 加载主题（immersive-dark / trust-neutral / clinical-light）  
+**已实现**（v2）：`useTenantTheme` 启动时 `GET /api/tenants/{id}`，按 `skinId` 设置 `dataset.skin` 并加载主题（immersive-dark 为默认 `:root`；trust-neutral / clinical-light 在 `themes/`）。
 
 ---
 
@@ -97,13 +107,13 @@ proxy: { '/api': { target: 'http://localhost:5280', changeOrigin: true } }
 
 | 立项模块 | 状态 |
 |---------|:----:|
-| ManuscriptTree | ⬜ |
-| TipTapEditor + EntityMention | ⬜ |
-| EntityPanel / Graph | ⬜ |
-| TimelineView | ⬜ |
-| ContradictionPanel | 🔶 过滤 + 确认 |
+| ManuscriptTree | ✅ 树 + 拖拽排序 |
+| TipTapEditor + EntityMention | ✅ `@` 角色引用 |
+| EntityPanel | 🔶 仅 WorldCharacter 列表/创建；Graph ⬜ |
+| TimelineView | ⬜（v3 计划项） |
+| ContradictionPanel | ✅ 过滤 + 确认 + 保存后刷新 |
 | SplitEditor | ⬜ |
-| PWA offline | 🔶 App Shell |
+| PWA offline | ✅ PWA-1 离线项目列表；PWA-2 离线写作 ⬜ |
 
 ---
 
@@ -114,7 +124,7 @@ proxy: { '/api': { target: 'http://localhost:5280', changeOrigin: true } }
 
 ---
 
-## 九、目标目录结构（待实现）
+## 九、目标目录结构（已基本落地；差异：无独立 `editorStore`/`entityStore`/`notes.ts`，见 §二实际结构）
 
 ```
 ClientApp/src/
@@ -190,11 +200,10 @@ ClientApp/src/
 
 ## 十一、TipTap 与 EntityMention 规格
 
-### 11.1 依赖（待安装）
+### 11.1 依赖（已安装，`extension-link` 未装可选）
 
 ```
-@tiptap/vue-3 @tiptap/starter-kit @tiptap/extension-link
-@tiptap/suggestion @tiptap/pm
+@tiptap/vue-3 @tiptap/starter-kit @tiptap/suggestion @tiptap/pm
 ```
 
 ### 11.2 自定义节点 `entityMention`
@@ -225,7 +234,7 @@ ClientApp/src/
 ```
 TipTap getJSON()
     → 遍历 entityMention 节点
-    → PUT /api/projects/{id}/documents/{docId}
+    → PUT /api/projects/{id}/manuscripts/{docId}
          body: { contentJson, entityLinks: [{ targetEntityId, startOffset, endOffset }] }
     → 服务端替换该文档全部 EntityLink 行
 ```
